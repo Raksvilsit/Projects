@@ -1,29 +1,24 @@
- #Импортируем нужные модули
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 import asyncio
 import aiohttp
+from aiohttp import web
 from dotenv import load_dotenv
 import os
+
 from handlers import function
-from aiohttp import web
 
-
-# Загружаем переменные окружения из файла .env
 load_dotenv()
 
 # Получаем токены из .env
 key = os.getenv('FBOT_TOKEN')
-dog = os.getenv('DOG_TOKEN')
-cats = os.getenv('CATS_TOKEN')
-wea = os.getenv("WEA_TOKEN")
 
-# Создаём экземпляры бота и диспетчера
+# Создаем бота и диспетчер
 bot = Bot(token=key)
-dp=Dispatcher()
+dp = Dispatcher()
 dp.include_router(function.router)
 
-# Функция для очистки апдейтов (чтобы старые сообщения не мешали при запуске бота)
+# Очистка апдейтов
 async def clear_updates():
     url = f"https://api.telegram.org/bot{key}/getUpdates"
     async with aiohttp.ClientSession() as session:
@@ -36,40 +31,25 @@ async def clear_updates():
             print(f"Очистил апдейты до update_id={last_update_id}")
         else:
             print("Нет новых апдейтов")
-            print("бот запущен")
 
-# Главная функция запуска бота
-async def main():
-    try:
-        print("Перед запуском бота очищаем очередь апдейтов...")
-        await clear_updates()
-    except KeyboardInterrupt:
-        print("Бот остановлен вручную")
-    finally:
-        await bot.session.close()
-
-    # Запускаем диспетчер (бот начинает обрабатывать сообщения)
-    await dp.start_polling(bot)
-
-# Запуск бота
-if __name__ == "__main__":
-    asyncio.run(main()) 
-
-
-
-   # 👇 Объявляем хендлер — то, что будет возвращать "I'm alive!"
+# Aiohttp обработчик
 async def handle(request):
     return web.Response(text="I'm alive!")
 
-# 👇 Создаём приложение и добавляем маршрут /
+# Главная функция
+async def on_startup(app):
+    await clear_updates()
+    asyncio.create_task(dp.start_polling(bot))
+
+# Создание aiohttp-приложения
 app = web.Application()
-app.add_routes([web.get('/', handle)])
+app.router.add_get("/", handle)
+app.on_startup.append(on_startup)
 
-# 👇 Получаем порт от Render или используем 8000 по умолчанию
-port = int(os.environ.get("PORT", 8000))
-
-# 👇 Запускаем сервер
-web.run_app(app, port=port)
+# Запуск
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    web.run_app(app, port=port)
 
 
 
