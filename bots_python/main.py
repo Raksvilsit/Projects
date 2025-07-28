@@ -32,9 +32,14 @@ async def clear_updates():
         else:
             print("Нет новых апдейтов")
 
-# Aiohttp обработчик
+# Aiohttp обработчики
 async def handle(request):
     return web.Response(text="I'm alive!")
+    
+async def healthz(request):
+    return web.Response(text="OK")
+
+app.router.add_get("/healthz", healthz)
 
 # Главная функция
 async def on_startup(app):
