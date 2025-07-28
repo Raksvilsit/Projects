@@ -10,13 +10,16 @@ from handlers import function
 
 load_dotenv()
 
-# Получаем токены из .env
+# Получаем токен из .env
 key = os.getenv('FBOT_TOKEN')
 
 # Создаем бота и диспетчер
 bot = Bot(token=key)
 dp = Dispatcher()
 dp.include_router(function.router)
+
+# Создаем aiohttp-приложение
+app = web.Application()
 
 # Очистка апдейтов
 async def clear_updates():
@@ -35,10 +38,11 @@ async def clear_updates():
 # Aiohttp обработчики
 async def handle(request):
     return web.Response(text="I'm alive!")
-    
+
 async def healthz(request):
     return web.Response(text="OK")
 
+app.router.add_get("/", handle)
 app.router.add_get("/healthz", healthz)
 
 # Главная функция
@@ -46,15 +50,13 @@ async def on_startup(app):
     await clear_updates()
     asyncio.create_task(dp.start_polling(bot))
 
-# Создание aiohttp-приложения
-app = web.Application()
-app.router.add_get("/", handle)
 app.on_startup.append(on_startup)
 
 # Запуск
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     web.run_app(app, port=port)
+
 
 
 
