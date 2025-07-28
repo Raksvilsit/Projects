@@ -6,6 +6,7 @@ import aiohttp
 from dotenv import load_dotenv
 import os
 from handlers import function
+from aiohttp import web
 
 
 # Загружаем переменные окружения из файла .env
