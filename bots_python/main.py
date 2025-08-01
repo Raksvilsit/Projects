@@ -10,7 +10,7 @@ from handlers import function
 
 load_dotenv()
 
-# Получаем токен из .env
+
 key = os.getenv('FBOT_TOKEN')
 
 # Создаем бота и диспетчер
@@ -45,7 +45,7 @@ async def healthz(request):
 app.router.add_get("/", handle)
 app.router.add_get("/healthz", healthz)
 
-# Главная функция
+
 async def on_startup(app):
     await clear_updates()
     asyncio.create_task(dp.start_polling(bot))
