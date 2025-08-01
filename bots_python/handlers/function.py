@@ -11,7 +11,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 load_dotenv()
 
-# Получаем токены из .env
+
 cats = os.getenv('CATS_TOKEN')
 dog = os.getenv('DOG_TOKEN')
 key = os.getenv('FBOT_TOKEN')
@@ -19,10 +19,9 @@ key = os.getenv('FBOT_TOKEN')
 router = Router()
 
 wea = os.getenv("WEA_TOKEN")
-if wea is None:
-    raise ValueError("API_KEY не загружен. Проверь файл .env и вызов load_dotenv()")
 
-# FSM состояние для ожидания геолокации
+
+# FSM 
 class WeatherStates(StatesGroup):
     waiting_location = State()
 
@@ -61,7 +60,7 @@ async def get_weather(lat, lon):
             else:
                 return f"Ошибка {resp.status}: не удалось получить данные о погоде."
 
-# --- Команда /weather: запрос геолокации ---
+# /weather: запрос геолокации 
 @router.message(Command(commands=["weather"]))
 async def weather_start(message: types.Message, state: FSMContext):
     button = types.KeyboardButton(text="Отправить геолокацию", request_location=True)
@@ -76,7 +75,7 @@ async def weather_start(message: types.Message, state: FSMContext):
     )
     await state.set_state(WeatherStates.waiting_location)
 
-# --- Получение геолокации ---
+#Получение геолокации 
 @router.message(WeatherStates.waiting_location, F.content_type == "location")
 async def location_received(message: types.Message, state: FSMContext):
     lat = message.location.latitude
@@ -85,7 +84,7 @@ async def location_received(message: types.Message, state: FSMContext):
     await message.answer(weather_info, reply_markup=types.ReplyKeyboardRemove())
     await state.clear()
 
-# --- Если пришло сообщение без геолокации (отказ) ---
+
 @router.message(WeatherStates.waiting_location)
 async def location_not_received(message: types.Message, state: FSMContext):
     # Координаты по умолчанию (например, твои)
@@ -98,7 +97,7 @@ async def location_not_received(message: types.Message, state: FSMContext):
     await message.answer(weather_info)
     await state.clear()
 
-# Остальной твой код (котики, собаки и т.д.) без изменений
+
 
 @router.message(Command(commands=["cats"]))
 async def send_cat(message: types.Message):
@@ -134,7 +133,7 @@ async def cmd_start(message: types.Message):
 
 @router.message(Command(commands=["info"]))
 async def info_handler(message: types.Message):
-    await message.answer("Информация о боте 📄")
+    await message.answer("Информация о боте ")
 
 
 
